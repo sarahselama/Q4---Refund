@@ -4,15 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: {
-          300: '#e4c97a',
-          400: '#d4a853',
-          500: '#c9a84c',
-          600: '#a8872a',
-        },
-        navy: {
-          800: '#1a1a30',
-          900: '#0f0f1e',
+        brand: {
+          cyan: '#4ab9e6',
+          navy: '#2d3666',
         },
       },
       fontFamily: {
