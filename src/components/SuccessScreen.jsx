@@ -42,7 +42,7 @@ export default function SuccessScreen({ submitted, onReset }) {
         )}
 
         {/* Submission summary card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl shadow-gray-200/60 dark:shadow-none border border-gray-100 dark:border-gray-800 overflow-hidden">
           <div className="px-6 py-4" style={{ backgroundColor: '#2d3666' }}>
             <h3 className="text-white font-semibold text-base">
               Submission Summary
@@ -51,20 +51,20 @@ export default function SuccessScreen({ submitted, onReset }) {
               Reference: #{submitted.bookingReference}
             </p>
           </div>
-          <div className="divide-y divide-gray-50">
-            <SummaryRow label="Full Name"           value={submitted.fullName} />
-            <SummaryRow label="Email Address"       value={submitted.email} />
-            <SummaryRow label="Booking Reference"   value={submitted.bookingReference} />
-            <SummaryRow label="Booking Date"        value={formatDate(submitted.bookingDate)} />
-            <SummaryRow label="Refund Reason"       value={submitted.refundReason} />
-            <SummaryRow label="Additional Details"  value={submitted.additionalDetails} multiline />
+          <div className="divide-y divide-gray-50 dark:divide-gray-800">
+            <SummaryRow label="Full Name" value={submitted.fullName} />
+            <SummaryRow label="Email Address" value={submitted.email} />
+            <SummaryRow label="Booking Reference" value={submitted.bookingReference} />
+            <SummaryRow label="Booking Date" value={formatDate(submitted.bookingDate)} />
+            <SummaryRow label="Refund Reason" value={submitted.refundReason} />
+            <SummaryRow label="Additional Details" value={submitted.additionalDetails} multiline />
             <SummaryRow label="Supporting Document" value={submitted.fileName || 'None provided'} />
           </div>
         </div>
 
         <button
           onClick={onReset}
-          className="mt-6 w-full py-3 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+          className="mt-6 w-full py-3 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Submit Another Request
         </button>

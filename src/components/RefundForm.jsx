@@ -20,40 +20,32 @@ const INITIAL_FORM = {
 }
 
 export default function RefundForm({ onSuccess }) {
-  const [form, setForm]           = useState(INITIAL_FORM)
-  const [errors, setErrors]       = useState({})
-  const [file, setFile]           = useState(null)
+  const [form, setForm] = useState(INITIAL_FORM)
+  const [errors, setErrors] = useState({})
+  const [file, setFile] = useState(null)
   const [filePreview, setFilePreview] = useState(null)
-  const [submitting, setSubmitting]   = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const fileInputRef = useRef(null)
 
   const showWarning = isOutside90Days(form.bookingDate)
 
-  // ── Field change handler ──────────────────────────────────────
   function handleChange(field, value) {
     if (field === 'bookingReference') value = value.toUpperCase()
-    
     setForm((prev) => ({ ...prev, [field]: value }))
-    // Clear error for this field as the user corrects it
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }))
   }
 
-  // ── Field blur handler (real-time validation) ─────────────────
   function handleBlur(field) {
     const validationErrors = validateForm(form)
     setErrors((prev) => {
       const newErrors = { ...prev }
-      if (validationErrors[field]) {
-        newErrors[field] = validationErrors[field]
-      } else {
-        delete newErrors[field]
-      }
+      if (validationErrors[field]) newErrors[field] = validationErrors[field]
+      else delete newErrors[field]
       return newErrors
     })
   }
 
-  // ── File handlers ─────────────────────────────────────────────
   function handleFile(e) {
     const f = e.target.files[0]
     if (!f) return
@@ -67,7 +59,6 @@ export default function RefundForm({ onSuccess }) {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  // ── Submit ────────────────────────────────────────────────────
   async function handleSubmit(e) {
     e.preventDefault()
     setSubmitError('')
@@ -75,53 +66,40 @@ export default function RefundForm({ onSuccess }) {
     const validationErrors = validateForm(form)
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
-      document
-        .querySelector('[data-error="true"]')
+      document.querySelector('[data-error="true"]')
         ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
     setSubmitting(true)
     try {
-      let fileUrl  = null
+      let fileUrl = null
       let fileName = null
 
-      // 1. Upload file to Supabase Storage if provided
       if (file) {
-        const ext  = file.name.split('.').pop()
+        const ext = file.name.split('.').pop()
         const path = `refunds/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('uploads')
-          .upload(path, file)
-
+        const { error: uploadError } = await supabase.storage.from('uploads').upload(path, file)
         if (uploadError) throw uploadError
-
-        const { data: urlData } = supabase.storage
-          .from('uploads')
-          .getPublicUrl(path)
-
-        fileUrl  = urlData.publicUrl
+        const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(path)
+        fileUrl = urlData.publicUrl
         fileName = file.name
       }
 
-      // 2. Insert submission into database
       const { error: dbError } = await supabase.from('refund_requests').insert({
-        full_name:          form.fullName.trim(),
-        email:              form.email.trim(),
-        booking_reference:  form.bookingReference.trim(),
-        booking_date:       form.bookingDate,
-        refund_reason:      form.refundReason,
+        full_name: form.fullName.trim(),
+        email: form.email.trim(),
+        booking_reference: form.bookingReference.trim(),
+        booking_date: form.bookingDate,
+        refund_reason: form.refundReason,
         additional_details: form.additionalDetails.trim(),
-        file_url:           fileUrl,
-        file_name:          fileName,
-        outside_window:     showWarning,
-        submitted_at:       new Date().toISOString(),
+        file_url: fileUrl,
+        file_name: fileName,
+        outside_window: showWarning,
+        submitted_at: new Date().toISOString(),
       })
 
       if (dbError) throw dbError
-
-      // 3. Hand off to parent to show success screen
       onSuccess({ ...form, fileUrl, fileName, outsideWindow: showWarning })
 
     } catch (err) {
@@ -132,20 +110,21 @@ export default function RefundForm({ onSuccess }) {
     }
   }
 
-  // ── Render ────────────────────────────────────────────────────
   return (
     <main className="flex-1 flex items-start justify-center px-4 py-10">
       <div className="w-full max-w-2xl">
 
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#2d3666]">Guest Refund Request</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-[#2d3666] dark:text-white">
+            Guest Refund Request
+          </h1>
+          <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">
             Please complete all fields. Our team will respond within 3–5 business days.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 p-6 sm:p-8 space-y-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl shadow-gray-200/60 dark:shadow-none border border-gray-100 dark:border-gray-800 p-6 sm:p-8 space-y-6">
 
             {/* Full Name */}
             <Field label="Full Name" required error={errors.fullName}>
@@ -174,8 +153,10 @@ export default function RefundForm({ onSuccess }) {
 
             {/* Booking Reference */}
             <Field label="Booking Reference" required error={errors.bookingReference}>
-              <div className={`flex items-center w-full rounded-xl border bg-slate-50 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#4ab9e6]/20 focus-within:border-[#4ab9e6] transition-all duration-200 overflow-hidden ${errors.bookingReference ? 'border-red-400 focus-within:ring-red-300' : 'border-slate-200'}`}>
-                <span className="pl-4 pr-0.5 mt-[1px] text-slate-500 font-medium text-sm select-none">DLX-</span>
+              <div className={`flex items-center w-full rounded-xl border bg-slate-50 dark:bg-gray-800 focus-within:bg-white dark:focus-within:bg-gray-800 focus-within:ring-4 focus-within:ring-[#4ab9e6]/20 focus-within:border-[#4ab9e6] transition-all duration-200 overflow-hidden ${errors.bookingReference ? 'border-red-400 focus-within:ring-red-300' : 'border-slate-200 dark:border-gray-700'}`}>
+                <span className="pl-4 pr-0.5 mt-[1px] text-slate-500 dark:text-gray-400 font-medium text-sm select-none">
+                  DLX-
+                </span>
                 <input
                   type="text"
                   placeholder="12345"
@@ -186,7 +167,7 @@ export default function RefundForm({ onSuccess }) {
                     handleChange('bookingReference', digits ? 'DLX-' + digits : '')
                   }}
                   onBlur={() => handleBlur('bookingReference')}
-                  className="w-full py-3 pr-4 bg-transparent text-gray-900 text-sm placeholder-slate-400 focus:outline-none"
+                  className="w-full py-3 pr-4 bg-transparent text-gray-900 dark:text-gray-100 text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none"
                 />
               </div>
             </Field>
@@ -248,65 +229,70 @@ export default function RefundForm({ onSuccess }) {
             {/* File Upload */}
             <Field label="Supporting Documents" hint="optional">
               {!file ? (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 dark:border-gray-700 rounded-xl cursor-pointer bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors">
                   <Upload className="text-[#4ab9e6] mb-2" size={24} />
-                  <span className="text-sm text-slate-500">Click to upload a photo or document</span>
-                  <span className="text-xs text-slate-400 mt-0.5">JPG, PNG, PDF up to 10MB</span>
+                  <span className="text-sm text-slate-500 dark:text-gray-400">
+                    Click to upload a photo or document
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">
+                    JPG, PNG, PDF, DOCX up to 10MB
+                  </span>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*,.pdf"
+                    accept="image/*,.pdf,.doc,.docx"
                     onChange={handleFile}
                     className="hidden"
                   />
                 </label>
               ) : (
-                <div className="flex items-center gap-3 p-4 border border-slate-200 rounded-xl bg-slate-50">
+                <div className="flex items-center gap-3 p-4 border border-slate-200 dark:border-gray-700 rounded-xl bg-slate-50 dark:bg-gray-800">
                   {filePreview ? (
                     <img src={filePreview} alt="preview" className="w-12 h-12 object-cover rounded-lg" />
                   ) : (
-                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <FileText className="text-blue-400" size={24} />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-700 truncate">{file.name}</p>
-                    <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={removeFile}
-                    className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
                     aria-label="Remove file"
                   >
-                    <X size={16} className="text-gray-500" />
+                    <X size={16} className="text-gray-500 dark:text-gray-400" />
                   </button>
                 </div>
               )}
             </Field>
 
-            {/* Submit error */}
             {submitError && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
                 {submitError}
               </div>
             )}
 
-            {/* Submit button */}
             <button
               type="submit"
               disabled={submitting}
               className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:opacity-90 shadow-lg shadow-[#4ab9e6]/30 hover:shadow-[#4ab9e6]/50 hover:-translate-y-0.5"
               style={{ backgroundColor: '#4ab9e6' }}
             >
-              {submitting ? (
-                <><Loader2 className="animate-spin" size={16} /> Submitting...</>
-              ) : (
-                'Submit Refund Request'
-              )}
+              {submitting
+                ? <><Loader2 className="animate-spin" size={16} /> Submitting...</>
+                : 'Submit Refund Request'
+              }
             </button>
 
-            <p className="text-center text-xs text-gray-400">
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500">
               By submitting, you confirm the details above are accurate.
             </p>
           </div>
@@ -316,7 +302,6 @@ export default function RefundForm({ onSuccess }) {
   )
 }
 
-// ── Small local helper — label wrapper for each field ─────────────
 function Field({ label, required, hint, error, children }) {
   return (
     <div>

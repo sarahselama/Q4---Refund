@@ -1,10 +1,10 @@
 # Q4 — Guest Refund Request Form
 ### Deluxe Holiday Homes™ Internal Tool
 
-A complete, production-ready web application built for the Q4 assignment. This project implements a fully functional, mobile-responsive refund request form with real-time validation, persistent storage, and an elevated UI matching the Deluxe Holiday Homes brand guidelines.
+A complete, production-ready web application built for the Q4 assignment. Fully functional, mobile-responsive refund request form with real-time validation, persistent storage, and an elevated UI matching the Deluxe Holiday Homes brand guidelines.
 
 ## 🚀 Live Demo
-**[Insert Your Deployment URL Here]**
+**[q4-refund.vercel.app](https://q4-refund.vercel.app/)**
 
 ## 🛠️ Stack
 - **Frontend**: React + Vite
@@ -16,24 +16,29 @@ A complete, production-ready web application built for the Q4 assignment. This p
 ## ✨ Features
 
 1. **Guest Refund Request Form**
-   - Collects 7 required data points (Name, Email, Reference, Date, Reason, Details, optional File Upload).
-   - **Conditional Logic:** Automatically flags bookings older than 90 days with a warning banner.
-   - **Confirmation:** Success screen dynamically renders the actual submitted data summary back to the user.
-   
-2. **Elevated UI & Brand Compliance**
-   - Styled from the ground up to mimic the **Deluxe Holiday Homes** corporate aesthetic.
-   - Features premium inputs (slate backgrounds, light cyan glowing focus rings) and luxurious drop shadows.
-   - Fully mobile responsive.
+   - 7 fields: Full Name, Email, Booking Reference, Booking Date, Reason (dropdown), Details, and optional File Upload (images, PDFs, Word docs).
+   - **Smart Input:** Booking Reference has a locked `DLX-` prefix — users only type the 5 digits.
+   - **Conditional Logic:** Bookings older than 90 days automatically show a yellow warning banner.
+   - **Real-Time Validation:** Every field validates on blur (as soon as you leave it), with clear inline error messages that disappear when corrected.
+   - **Confirmation:** Success screen renders the full submitted data back to the guest.
 
-3. **Advanced Real-Time Validation**
-   - Instant field-level validation `onBlur` (errors appear/disappear smoothly as you type or switch fields).
-   - **Smart Inputs:** The Booking Reference field features a locked `DLX-` badge and safely sanitizes input to only accept 5 numbers. 
-   - Strict email and full-name multi-word validation.
+2. **Admin Dashboard**
+   - Toggle between the Form and the Dashboard directly from the header.
+   - Live stats cards: Total, Outside Window, and by reason.
+   - Filter by reason, refund window, and free-text search (name, email, booking ref).
+   - Sort by newest or oldest.
+   - **CSV Export:** Downloads `RefundRequests_ddmmyyyy.csv` with the currently filtered rows.
 
-4. **Persistent Storage & Admin View**
-   - Seamlessly uploads and stores image/PDF evidence securely in a Supabase Storage Bucket.
-   - Persists all request data into a Supabase database.
-   - **Evaluator Bonus:** Includes a hidden **"View Submissions"** dashboard directly accessible from the header, allowing the evaluator to verify database persistence LIVE without needing database access!
+3. **Design & UX**
+   - Styled to match the Deluxe Holiday Homes brand (`#2d3666` navy, `#4ab9e6` cyan).
+   - Dark mode toggle (preference persisted in `localStorage`).
+   - Fully mobile responsive — header condenses gracefully on small screens.
+   - Premium inputs with glowing cyan focus rings and drop-shadowed cards.
+
+4. **Persistent Storage**
+   - All submissions stored in Supabase (PostgreSQL).
+   - File uploads stored in Supabase Storage with public URLs.
+
 
 ---
 

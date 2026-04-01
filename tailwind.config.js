@@ -1,12 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
         brand: {
-          cyan: '#4ab9e6',
           navy: '#2d3666',
+          blue: '#4ab9e6',
         },
       },
       fontFamily: {
